@@ -1,7 +1,7 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 const cfg=window.BOOTH_CONFIG,$=id=>document.getElementById(id),supabase=createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);let entries=[],selected=[],images=new Map(),session=null;
-// Physical print geometry: 76.2 mm square Kodak Mini 3 sheet, 28 × 38 mm photos.
-const PRINT_LAYOUT=Object.freeze({canvasPx:1200,sheetMm:76.2,photoWidthMm:28,photoHeightMm:38,gapMm:3});
+// Physical print geometry: 76.2 mm square Kodak Mini 3 sheet, 29 × 39 mm photos.
+const PRINT_LAYOUT=Object.freeze({canvasPx:1200,sheetMm:76.2,photoWidthMm:29,photoHeightMm:39,gapMm:3});
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function api(path,method='GET',body){const token=session?.access_token;if(!token)throw Error('로그인이 필요합니다.');const r=await fetch(`${cfg.supabaseUrl}/functions/v1/${cfg.functionName}/${path}`,{method,headers:{apikey:cfg.supabaseAnonKey,Authorization:`Bearer ${token}`,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok)throw Error(d.error||'요청 실패');return d}
 async function show(){const {data:{session:s}}=await supabase.auth.getSession();session=s;$('loginBox').classList.toggle('hidden',!!s);$('dashboard').classList.toggle('hidden',!s);if(s)await refresh()}
@@ -19,3 +19,4 @@ $('save').onclick=async()=>{await draw();const a=document.createElement('a');a.h
 $('printed').onclick=async()=>{if(!selected.length)return;try{await api('status','POST',{ids:selected,status:'printed'});$('status').textContent='출력 완료 처리했습니다.';selected=[];$('edit').classList.add('hidden');await refresh()}catch(e){alert(e.message)}};
 $('deleteAll').onclick=async()=>{if(prompt('모든 사진과 연락처를 삭제합니다. 계속하려면 DELETE ALL을 입력하세요.')!=='DELETE ALL')return;try{await api('delete-all','POST',{});images.forEach(url=>URL.revokeObjectURL(url));images.clear();selected=[];await refresh();$('status').textContent='모든 접수 정보가 삭제되었습니다.'}catch(e){alert(e.message)}};
 show().catch(e=>$('loginMsg').textContent=e.message);
+
